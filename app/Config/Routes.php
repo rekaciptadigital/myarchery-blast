@@ -2,16 +2,16 @@
 
 namespace Config;
 
+use Config\Services;
+
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
 
 // Load the system's routing file first, so that the app and ENVIRONMENT
 // can override as needed.
-if (file_exists(SYSTEMPATH . 'Config/Routes.php'))
-{
-	require SYSTEMPATH . 'Config/Routes.php';
+if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
+    require_once SYSTEMPATH . 'Config/Routes.php';
 }
-
 /**
  * --------------------------------------------------------------------
  * Router Setup
@@ -47,9 +47,8 @@ $routes->get('/', 'Home::index');
  * You will have access to the $routes object within that file without
  * needing to reload it.
  */
-if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php'))
-{
-	require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
+if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
+    require_once APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }
 
 /**
@@ -57,81 +56,118 @@ if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php'))
  * Include Modules Routes Files
  * --------------------------------------------------------------------
  */
-if (file_exists(ROOTPATH.'inc/plugins')) {
-    $modulesPath = ROOTPATH.'inc/plugins/';
+if (file_exists(ROOTPATH . 'inc/plugins')) {
+    $modulesPath = ROOTPATH . 'inc/plugins/';
     $modules = scandir($modulesPath);
 
     foreach ($modules as $module) {
-        if ($module === '.' || $module === '..') continue;
-        if (is_dir($modulesPath) . '/' . $module) {
-            $routesPath = $modulesPath . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                require($routesPath);
-            } else {
-                continue;
-            }
+        // Skip hidden files, current/parent directories, and non-directory files
+        if (
+            $module === '.' || $module === '..' ||
+            strpos($module, '.') === 0 ||
+            !is_dir($modulesPath . $module) ||
+            pathinfo($module, PATHINFO_EXTENSION) !== ''
+        ) {
+            continue;
+        }
+
+        $routesConfigPath = '/Config/Routes.php';
+        $routesPath = $modulesPath . $module . $routesConfigPath;
+
+        // Additional security check for open_basedir compliance
+        $realPath = realpath($routesPath);
+        if ($realPath && file_exists($realPath)) {
+            require_once $realPath;
+        }
+    }
+}
+if (file_exists(ROOTPATH . 'inc/core')) {
+    $modulesPath = ROOTPATH . 'inc/core/';
+    $modules = scandir($modulesPath);
+
+    foreach ($modules as $module) {
+        // Skip hidden files, current/parent directories, and non-directory files
+        if (
+            $module === '.' || $module === '..' ||
+            strpos($module, '.') === 0 ||
+            !is_dir($modulesPath . $module) ||
+            pathinfo($module, PATHINFO_EXTENSION) !== ''
+        ) {
+            continue;
+        }
+
+        $routesConfigPath = '/Config/Routes.php';
+        $routesPath = $modulesPath . $module . $routesConfigPath;
+
+        // Additional security check for open_basedir compliance
+        $realPath = realpath($routesPath);
+        if ($realPath && file_exists($realPath)) {
+            require_once $realPath;
         }
     }
 }
 
-if (file_exists(ROOTPATH.'inc/core')) {
-    $modulesPath = ROOTPATH.'inc/core/';
+if (file_exists(ROOTPATH . 'inc/themes/backend')) {
+    $modulesPath = ROOTPATH . 'inc/themes/backend/';
     $modules = scandir($modulesPath);
 
     foreach ($modules as $module) {
-        if ($module === '.' || $module === '..') continue;
-        if (is_dir($modulesPath) . '/' . $module) {
-            $routesPath = $modulesPath . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                require($routesPath);
-            } else {
-                continue;
-            }
+        // Skip hidden files, current/parent directories, and non-directory files
+        if (
+            $module === '.' || $module === '..' ||
+            strpos($module, '.') === 0 ||
+            !is_dir($modulesPath . $module) ||
+            pathinfo($module, PATHINFO_EXTENSION) !== ''
+        ) {
+            continue;
+        }
+
+        $routesConfigPath = '/Config/Routes.php';
+        $routesPath = $modulesPath . $module . $routesConfigPath;
+
+        // Additional security check for open_basedir compliance
+        $realPath = realpath($routesPath);
+        if ($realPath && file_exists($realPath)) {
+            require_once $realPath;
         }
     }
 }
 
-if (file_exists(ROOTPATH.'inc/themes/backend')) {
-    $modulesPath = ROOTPATH.'inc/themes/backend/';
+if (file_exists(ROOTPATH . 'inc/themes/frontend')) {
+    $modulesPath = ROOTPATH . 'inc/themes/frontend/';
     $modules = scandir($modulesPath);
 
     foreach ($modules as $module) {
-        if ($module === '.' || $module === '..') continue;
-        if (is_dir($modulesPath) . '/' . $module) {
-            $routesPath = $modulesPath . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                require($routesPath);
-            } else {
-                continue;
-            }
+        // Skip hidden files, current/parent directories, and non-directory files
+        if (
+            $module === '.' || $module === '..' ||
+            strpos($module, '.') === 0 ||
+            !is_dir($modulesPath . $module) ||
+            pathinfo($module, PATHINFO_EXTENSION) !== ''
+        ) {
+            continue;
+        }
+
+        $routesConfigPath = '/Config/Routes.php';
+        $routesPath = $modulesPath . $module . $routesConfigPath;
+
+        // Additional security check for open_basedir compliance
+        $realPath = realpath($routesPath);
+        if ($realPath && file_exists($realPath)) {
+            require_once $realPath;
         }
     }
 }
 
-if (file_exists(ROOTPATH.'inc/themes/frontend')) {
-    $modulesPath = ROOTPATH.'inc/themes/frontend/';
-    $modules = scandir($modulesPath);
-
-    foreach ($modules as $module) {
-        if ($module === '.' || $module === '..') continue;
-        if (is_dir($modulesPath) . '/' . $module) {
-            $routesPath = $modulesPath . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                require($routesPath);
-            } else {
-                continue;
-            }
-        }
-    }
-}
-
-if ( file_exists( realpath(  __DIR__."/../Helpers" ) ) ) {
-    $helperPath = realpath(  __DIR__."/../Helpers/" )."/";
+if (file_exists(realpath(__DIR__ . "/../Helpers"))) {
+    $helperPath = realpath(__DIR__ . "/../Helpers/") . "/";
     $helpers = scandir($helperPath);
     foreach ($helpers as $helper) {
-        if ($helper === '.' || $helper === '..' || stripos( $helper , "_helper.php") === false) continue;
-        if (  file_exists( $helperPath.$helper ) ) {
-            require_once( $helperPath.$helper );
+        if ($helper === '.' || $helper === '..' || stripos($helper, "_helper.php") === false) {
+            continue;
+        }
+        if (file_exists($helperPath . $helper)) {
+            require_once $helperPath . $helper;
         }
     }
 }
