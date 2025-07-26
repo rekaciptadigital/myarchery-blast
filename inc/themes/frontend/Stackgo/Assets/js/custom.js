@@ -20,14 +20,25 @@
          Sticky
 *************************/
 POTENZA.isSticky = function () {
-  $(window).on('scroll',function(event) {
-        var scroll = $(window).scrollTop();
-        if (scroll < 300) {
-            $(".header").removeClass("sticky-top");
-        }else{
-            $(".header").addClass("sticky-top");
-        }
-    });
+  // Debounce scroll event for sticky header
+  var debounce = function(func, wait) {
+    var timeout;
+    return function() {
+      var context = this, args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+        func.apply(context, args);
+      }, wait);
+    };
+  };
+  $(window).on('scroll', debounce(function(event) {
+    var scroll = $(window).scrollTop();
+    if (scroll < 300) {
+      $(".header").removeClass("sticky-top");
+    } else {
+      $(".header").addClass("sticky-top");
+    }
+  }, 50));
 };
 /*************************
     Menu
@@ -111,7 +122,9 @@ POTENZA.dropdownmenu = function () {
           nav: $navarrow,
           navText: ["<i class='fas fa-arrow-left'></i>", "<i class='fas fa-arrow-right'></i>"],
           autoplay: $autoplay,
-          autoplayHoverPause: true
+          autoplayHoverPause: true,
+          lazyLoad: true,
+          checkVisibility: false
         });
       });
     }
@@ -279,7 +292,7 @@ POTENZA.searchbox = function () {
         columnThreshold: 0
       });
       jQuery(document).ready(function(){
-		jQuery( document ).on( 'click', '.btn-filter', function(){
+    jQuery( document ).on( 'click', '.btn-filter', function(){
           var data_group = jQuery(this).attr('data-group');
           if( data_group != 'all' ){
             shuffleInstance.filter([data_group]);
@@ -331,14 +344,25 @@ POTENZA.searchbox = function () {
   POTENZA.goToTop = function () {
     var $goToTop = $('#back-to-top');
     $goToTop.hide();
-    $window.scroll(function () {
+    // Debounce scroll event for back-to-top
+    var debounce = function(func, wait) {
+      var timeout;
+      return function() {
+        var context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+          func.apply(context, args);
+        }, wait);
+      };
+    };
+    $window.scroll(debounce(function () {
       if ($window.scrollTop() > 100) $goToTop.fadeIn();
       else $goToTop.fadeOut();
-    });
+    }, 50));
     $goToTop.on("click", function () {
       $('body,html').animate({
         scrollTop: 0
-      }, 1000);
+      }, 500); // Percepat animasi agar terasa lebih instan
       return false;
     });
   }
