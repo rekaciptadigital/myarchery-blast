@@ -124,25 +124,39 @@ if(!function_exists('wa_keyword_trim')){
 if(!function_exists('wa_generate_instance_id')){
     function wa_generate_instance_id(){
         $api_path = get_option('whatsapp_server_url', '');
-        $url = $api_path . 'generate-instance-id';
         
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        $result = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($http_code == 200 && $result) {
-            $data = json_decode($result);
-            if ($data && isset($data->instance_id)) {
-                return $data->instance_id;
+        // Only try API if URL is configured
+        if (!empty($api_path)) {
+            $url = $api_path . 'generate-instance-id';
+            
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            $result = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
+            
+            // Log if debug mode is enabled
+            if (ENVIRONMENT === 'development' && $http_code != 200) {
+                log_message('debug', "wa_generate_instance_id: HTTP {$http_code}, URL: {$url}, Error: {$error}");
+            }
+            
+            if ($http_code == 200 && $result) {
+                $data = json_decode($result);
+                if ($data && isset($data->instance_id)) {
+                    return $data->instance_id;
+                }
             }
         }
         
-        // Fallback to old method if API call fails
-        return strtoupper(uniqid());
+        // Fallback: Generate unique ID using timestamp + random
+        // This ensures uniqueness even without API
+        $timestamp = base_convert(microtime(true) * 10000, 10, 36);
+        $random = base_convert(mt_rand(100000, 999999), 10, 36);
+        return strtoupper($timestamp . $random);
     }
 }
