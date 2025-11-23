@@ -31,11 +31,15 @@ class Whatsapp_profiles extends \CodeIgniter\Controller
         $content_data['accounts'] = $accounts;
 
         if (empty($account)) {
-            $session = db_get("*", TB_WHATSAPP_SESSIONS, ["status" => 0, "team_id" => $team_id]);
-            if (empty($session)) {
+            // If no instance_id provided in URL, always generate new one
+            if ($instance_id === false) {
+                // Delete old pending sessions for this team
+                db_delete(TB_WHATSAPP_SESSIONS, ["status" => 0, "team_id" => $team_id]);
+                
                 // Generate unique instance ID from WhatsApp server API
                 $instance_id = wa_generate_instance_id();
-                db_delete(TB_WHATSAPP_SESSIONS, ["status" => 0, "team_id" => $team_id]);
+                
+                // Create new session
                 db_insert(TB_WHATSAPP_SESSIONS, [
                     "ids" => ids(),
                     "instance_id" => $instance_id,
@@ -43,10 +47,22 @@ class Whatsapp_profiles extends \CodeIgniter\Controller
                     "data" => NULL,
                     "status" => 0
                 ]);
-
+                
                 $content_data['instance_id'] = $instance_id;
             } else {
-                $content_data['instance_id'] = $session->instance_id;
+                // Reuse existing instance_id from URL parameter
+                $session = db_get("*", TB_WHATSAPP_SESSIONS, ["instance_id" => $instance_id, "team_id" => $team_id]);
+                if (empty($session)) {
+                    // Create session if not exists
+                    db_insert(TB_WHATSAPP_SESSIONS, [
+                        "ids" => ids(),
+                        "instance_id" => $instance_id,
+                        "team_id" => $team_id,
+                        "data" => NULL,
+                        "status" => 0
+                    ]);
+                }
+                $content_data['instance_id'] = $instance_id;
             }
         } else {
             db_update(TB_WHATSAPP_SESSIONS, ['status' => 0], ['instance_id' => $account->token]);
