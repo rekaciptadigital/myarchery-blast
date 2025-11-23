@@ -120,3 +120,29 @@ if(!function_exists('wa_keyword_trim')){
         return implode(",", $tmp);
     }
 }
+
+if(!function_exists('wa_generate_instance_id')){
+    function wa_generate_instance_id(){
+        $api_path = get_option('whatsapp_server_url', '');
+        $url = $api_path . 'generate-instance-id';
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $result = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_code == 200 && $result) {
+            $data = json_decode($result);
+            if ($data && isset($data->instance_id)) {
+                return $data->instance_id;
+            }
+        }
+        
+        // Fallback to old method if API call fails
+        return strtoupper(uniqid());
+    }
+}

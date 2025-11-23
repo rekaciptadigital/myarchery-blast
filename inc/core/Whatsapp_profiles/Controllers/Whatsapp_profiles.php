@@ -33,7 +33,8 @@ class Whatsapp_profiles extends \CodeIgniter\Controller
         if (empty($account)) {
             $session = db_get("*", TB_WHATSAPP_SESSIONS, ["status" => 0, "team_id" => $team_id]);
             if (empty($session)) {
-                $instance_id = strtoupper(uniqid());
+                // Generate unique instance ID from WhatsApp server API
+                $instance_id = wa_generate_instance_id();
                 db_delete(TB_WHATSAPP_SESSIONS, ["status" => 0, "team_id" => $team_id]);
                 db_insert(TB_WHATSAPP_SESSIONS, [
                     "ids" => ids(),
